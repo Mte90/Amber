@@ -22,6 +22,22 @@ fn mkfile() -> (PathBuf, TempDir) {
     (file_path, temp_dir)
 }
 
+fn load_stdlib_test(func: &str) -> (String, String) {
+    let mut test = String::new();
+    fs::File::open(format!("./src/tests/stdlib/{func}.ab"))
+    .expect(&format!("Failed to open {func} test file"))
+    .read_to_string(&mut test)
+    .expect(&format!("Test {func} not found"));
+
+    let mut output = String::new();
+    fs::File::open(format!("./src/tests/stdlib/{func}.output.txt"))
+    .expect(&format!("Failed to open {func} output file"))
+    .read_to_string(&mut output)
+    .expect(&format!("Test output {func} not found"));
+
+    (test, output)
+}
+
 #[test]
 fn input() {
     let prompt_message = "Please enter your name:";
@@ -59,14 +75,8 @@ fn input() {
 
 #[test]
 fn replace_once() {
-    let code = "
-        import * from \"std\"
-        main {
-            echo replace_once(\"hello world!\", \"world\", \"Amber\")
-        }
-    ";
-
-    test_amber!(code, "hello Amber!")
+    let (code, output) = load_stdlib_test("replace_once");
+    test_amber!(code, output)
 }
 
 #[test]
