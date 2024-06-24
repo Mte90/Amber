@@ -79,6 +79,18 @@ fn replace_once() {
     test_amber!(code, output)
 }
 
+fn stdlib_tests() {
+    let paths = fs::read_dir("./src/tests/stdlib/").unwrap();
+
+    for _test in paths {
+        #[test]
+        fn _test() {
+            let (code, output) = load_stdlib_test(_test);
+            test_amber!(code, output)
+        }
+    }
+}
+
 #[test]
 fn replace() {
     let code = "
