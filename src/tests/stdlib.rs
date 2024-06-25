@@ -12,15 +12,16 @@ use tempfile::tempdir;
 use tempfile::TempDir;
 use std::process::{Command, Stdio};
 
+/*
+ * Autoload the Amber test files for stdlib and match the output with the output.txt file
+ */
 #[test_resources("src/tests/stdlib/*.ab")]
 fn amber_test(input: &str) {
     let code = fs::read_to_string(input)
         .expect(&format!("Failed to open {input} test file"));
 
-    // We should fail the test if the file is not found or something
-
     let output = fs::read_to_string(input.replace(".ab", ".output.txt"))
-        .expect(&format!("Failed to open {input}.output.txt file"));
+        .expect(&format!("Failed to open *output.txt file"));
 
     test_amber!(code, output);
 }
@@ -72,12 +73,6 @@ fn input() {
 
     assert_eq!(output_str.trim_end_matches('\n'), expected_output);
 }
-
-// #[test]
-// fn replace_once() {
-//     let (code, output) = load_stdlib_test("replace_once");
-//     test_amber!(code, output)
-// }
 
 #[test]
 fn replace() {
