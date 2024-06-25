@@ -1,5 +1,6 @@
-#![feature(custom_test_frameworks)]
-#![test_runner(run_test)]
+#![cfg(test)]
+extern crate test_generator;
+use test_generator::test_resources;
 use crate::compiler::AmberCompiler;
 use crate::test_amber;
 use crate::tests::compile_code;
@@ -10,6 +11,19 @@ use std::path::PathBuf;
 use tempfile::tempdir;
 use tempfile::TempDir;
 use std::process::{Command, Stdio};
+
+#[test_resources("src/tests/stdlib/*.ab")]
+fn amber_test(input: &str) {
+    let code = fs::read_to_string(input)
+        .expect(&format!("Failed to open {input} test file"));
+
+    // We should fail the test if the file is not found or something
+
+    let output = fs::read_to_string(input.replace(".ab", ".output.txt"))
+        .expect(&format!("Failed to open {input}.output.txt file"));
+
+    test_amber!(code, output);
+}
 
 fn mkfile() -> (PathBuf, TempDir) {
     let temp_dir = tempdir().expect("Failed to create temporary directory");
@@ -22,45 +36,6 @@ fn mkfile() -> (PathBuf, TempDir) {
     file.flush().expect("Failed to flush file");
 
     (file_path, temp_dir)
-}
-
-fn load_stdlib_test(func: &str) -> (String, String) {
-    let mut test = String::new();
-    fs::File::open(format!("./src/tests/stdlib/{func}.ab"))
-        .expect(&format!("Failed to open {func} test file"))
-        .read_to_string(&mut test);
-
-    //TODO add loader for .rs test files like for `input`
-
-    let mut output = String::new();
-    fs::File::open(format!("./src/tests/stdlib/{func}.output.txt"))
-        .expect(&format!("Failed to open {func} output file"))
-        .read_to_string(&mut output);
-
-    (test, output)
-}
-
-fn run_test(tests: &[&str]) {
-    for t in tests {
-        let (code, output) = load_stdlib_test(t);
-        if test_amber!(code, output) {
-            println!("PASSED");
-        } else {
-            println!("FAILED");
-        }
-    }
-}
-
-fn load_tests() {
-    for _script in fs::read_dir("./src/tests/stdlib/").unwrap() {
-        let entry = _script.unwrap();
-        let path = entry.path();
-        if !path.is_dir() {
-            println!("Running {:?} test", path);
-            #[test_case]
-            path
-        }
-    }
 }
 
 #[test]
