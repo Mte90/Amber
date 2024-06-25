@@ -1,3 +1,5 @@
+#![feature(custom_test_frameworks)]
+#![test_runner(run_test)]
 use crate::compiler::AmberCompiler;
 use crate::test_amber;
 use crate::tests::compile_code;
@@ -36,6 +38,29 @@ fn load_stdlib_test(func: &str) -> (String, String) {
         .read_to_string(&mut output);
 
     (test, output)
+}
+
+fn run_test(tests: &[&str]) {
+    for t in tests {
+        let (code, output) = load_stdlib_test(t);
+        if test_amber!(code, output) {
+            println!("PASSED");
+        } else {
+            println!("FAILED");
+        }
+    }
+}
+
+fn load_tests() {
+    for _script in fs::read_dir("./src/tests/stdlib/").unwrap() {
+        let entry = _script.unwrap();
+        let path = entry.path();
+        if !path.is_dir() {
+            println!("Running {:?} test", path);
+            #[test_case]
+            path
+        }
+    }
 }
 
 #[test]
@@ -78,15 +103,6 @@ fn input() {
 //     let (code, output) = load_stdlib_test("replace_once");
 //     test_amber!(code, output)
 // }
-fn main()  {
-    for script in fs::read_dir("./src/tests/stdlib/").unwrap() {
-        #[test]
-        fn _test() {
-            let (code, output) = load_stdlib_test(script);
-            test_amber!(code, output)
-        }
-    }
-}
 
 #[test]
 fn replace() {
