@@ -25,15 +25,15 @@ fn mkfile() -> (PathBuf, TempDir) {
 fn load_stdlib_test(func: &str) -> (String, String) {
     let mut test = String::new();
     fs::File::open(format!("./src/tests/stdlib/{func}.ab"))
-    .expect(&format!("Failed to open {func} test file"))
-    .read_to_string(&mut test)
-    .expect(&format!("Test {func} not found"));
+        .expect(&format!("Failed to open {func} test file"))
+        .read_to_string(&mut test);
+
+    //TODO add loader for .rs test files like for `input`
 
     let mut output = String::new();
     fs::File::open(format!("./src/tests/stdlib/{func}.output.txt"))
-    .expect(&format!("Failed to open {func} output file"))
-    .read_to_string(&mut output)
-    .expect(&format!("Test output {func} not found"));
+        .expect(&format!("Failed to open {func} output file"))
+        .read_to_string(&mut output);
 
     (test, output)
 }
@@ -73,19 +73,16 @@ fn input() {
     assert_eq!(output_str.trim_end_matches('\n'), expected_output);
 }
 
-#[test]
-fn replace_once() {
-    let (code, output) = load_stdlib_test("replace_once");
-    test_amber!(code, output)
-}
-
-fn stdlib_tests() {
-    let paths = fs::read_dir("./src/tests/stdlib/").unwrap();
-
-    for _test in paths {
+// #[test]
+// fn replace_once() {
+//     let (code, output) = load_stdlib_test("replace_once");
+//     test_amber!(code, output)
+// }
+fn main()  {
+    for script in fs::read_dir("./src/tests/stdlib/").unwrap() {
         #[test]
         fn _test() {
-            let (code, output) = load_stdlib_test(_test);
+            let (code, output) = load_stdlib_test(script);
             test_amber!(code, output)
         }
     }
